@@ -9,14 +9,14 @@ from os.path import basename
 from urllib import parse
 from bs4 import BeautifulSoup
 
-### CREATE GLOBAL VARIABLES FROM ARGUMENTS ON COMMAND LINE...
+### ####
 # PHOTO_SIZE: Default = 20000 bytes
 # DOWNLOAD_PATH: Must be specified
 # USERNAME: Must be specified
 
 
 
-def get_recent_pictures(username, download_path):
+def get_recent_pictures(username, download_path, pic_size):
 
     url = 'http://' + username + '.tumblr.com/archive/filter-by/photo'
 
@@ -64,11 +64,11 @@ def get_recent_pictures(username, download_path):
 
     # Download every image from their urls
     for img_url in photo_links:
-        download_image_from_url(img_url, download_path)
+        download_image_from_url(img_url, download_path, pic_size=pic_size)
     print
     print
 
-def download_image_from_url(img_url, download_path):
+def download_image_from_url(img_url, download_path, pic_size):
     # Download only the proper image files
     if img_url.lower().endswith('.jpeg') or \
         img_url.lower().endswith('.jpg') or \
@@ -78,7 +78,7 @@ def download_image_from_url(img_url, download_path):
         try:
             img_data = request.urlopen(img_url).read()
             # Download only significant images (min is 20 kb to avoid avatar downloads)
-            if len(img_data) >= 20000:
+            if len(img_data) >= pic_size:
                 file_name = username.upper() + basename(parse.urlsplit(img_url)[2])
                 # Filter out avatar pictures if they are bigger than min photo size
                 if 'static' not in file_name and 'avatar' not in file_name:
