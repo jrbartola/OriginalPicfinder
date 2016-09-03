@@ -14,23 +14,39 @@ from bs4 import BeautifulSoup
 # DOWNLOAD_PATH: Must be specified
 # USERNAME: Must be specified
 
+def get_oldest_pictures(username, download_path, pic_size):
+    next_time = 0
+    while next_time is not False and next_time is not None:
+        next_time = get_recent_pictures(username, download_path, pic_size, next_time)
 
 
-def get_recent_pictures(username, download_path, pic_size):
+def get_recent_pictures(username, download_path, pic_size, before_time=0):
 
-    url = 'http://' + username + '.tumblr.com/archive/filter-by/photo'
+    if before_time != 0:
+        url = 'http://' + username + '.tumblr.com/archive/filter-by/photo?before_time=' + str(before_time)
+    else:
+        url = 'http://' + username + '.tumblr.com/archive/filter-by/photo'
 
     try:
         url_content = request.urlopen(url).read()
     # Throw excpetion if url is invalid
-    except Exception:
-        print(Exception)
-        return
+    except Exception as e:
+        print("Could not open page due to " + str(e) + ". Skipping..")
+        return False
     soup = BeautifulSoup(url_content)
 
     # We want only original, user-posted photos
     original_divs = soup.findAll('div', 'is_original')
 
+    # Retrieve link to next archive page (if retrieving oldest pics)
+    next_time = soup.find('a', {'id':'next_page_link'})
+
+    # If we reached the last page, terminate
+    if next_time is None:
+        print("Reached the end of " + username + "'s archive. Finishing...")
+        return None
+
+    next_time = int(next_time['href'][37:])
     blog_links = []
 
     # Iterate through all div elements with 'is_original' class
@@ -64,11 +80,12 @@ def get_recent_pictures(username, download_path, pic_size):
 
     # Download every image from their urls
     for img_url in photo_links:
-        download_image_from_url(img_url, download_path, pic_size=pic_size)
+        download_image_from_url(username, img_url, download_path, pic_size=pic_size)
     print
     print
+    return next_time
 
-def download_image_from_url(img_url, download_path, pic_size):
+def download_image_from_url(username, img_url, download_path, pic_size):
     # Download only the proper image files
     if img_url.lower().endswith('.jpeg') or \
         img_url.lower().endswith('.jpg') or \
@@ -88,11 +105,12 @@ def download_image_from_url(img_url, download_path, pic_size):
                         # output.write(imgData)
                         # output.close()
                     else:
-                        print("Found    " + img_url)
+                        print("Downloading    " + img_url + "...")
                         output = open(os.path.join(download_path, file_name), 'wb')
-                        output.write(imgData)
+                        output.write(img_data)
                         output.close()
-        except Exception:
-            print(Exception)
+        except Exception as e:
+            #print(Exception)
+            print("Could not download picture due to " + str(e) + ". Skipping...")
             # pass
 
