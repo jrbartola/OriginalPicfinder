@@ -15,7 +15,7 @@ def verify_path(path):
 def main(argv):
     if len(argv) < 2:
         print("\nYou must specify a tumblr username and a download path.\n")
-        print("Use: \n\tpython tumblr_finder.py <username> <download_path> <optional:min_image_size>")
+        print("Usage: \n\tpython tumblr_finder.py <username> <download_path> <optional:min_image_size>")
         print("\nDefault minimum image download size is 20kb (20000) if not specified")
         if platform.system() == "Windows":
             print("\nExample: python tumblr_finder.py myblog123 C:\\Users\\Jesse\\Downloads 25000")
@@ -37,8 +37,8 @@ def main(argv):
             print("The third argument provided must be a positive integer")
             return
 
-    #retrieval.get_recent_pictures(username, pathname, picsize)
-    retrieval.get_oldest_pictures(username, pathname, picsize)
+    retrieval.get_recent_pictures(username, pathname, picsize)
+    #retrieval.get_oldest_pictures(username, pathname, picsize)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
